@@ -20,8 +20,15 @@
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
       </div>
+      <form method="POST" action="/urls/<%= id %>/update">
+        <input type="text" name="updatedURL">
+        <input class="btn btn-primary" type="submit" value="Submit">     
+      </form>
       <div class="card-footer text-muted"></div>
     </div>
+
+
+    
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

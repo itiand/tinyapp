@@ -72,6 +72,19 @@ app.post('/urls/:id/delete', (req,res) => {
   res.redirect('/urls')
 })
 
+app.post('/urls/:id/update', (req, res) => {
+  const id = req.params.id;
+  // const newURL = req.body['newURL'];
+
+  console.log(id);
+  console.log(req.body);
+  // // Update the URL in the database
+  // urlDatabase[id] = newURL;
+
+  // res.redirect(`/urls/${id}`);
+});
+
+
 app.listen(PORT, () => {
   console.log(`Example app listening to port ${PORT}!`);
 });
