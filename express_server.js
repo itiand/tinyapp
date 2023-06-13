@@ -72,16 +72,16 @@ app.post('/urls/:id/delete', (req,res) => {
   res.redirect('/urls')
 })
 
-app.post('/urls/:id/update', (req, res) => {
+app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
-  // const newURL = req.body['newURL'];
+  const updatedURL = req.body['updatedURL'];
 
   console.log(id);
   console.log(req.body);
   // // Update the URL in the database
-  // urlDatabase[id] = newURL;
-
-  // res.redirect(`/urls/${id}`);
+  urlDatabase[id] = updatedURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls/${id}`);
 });
 
 
