@@ -64,6 +64,13 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post('/urls/:id/delete', (req,res) => {
+  console.log(req.params); //{ id: '9sm5xK' }
+  delete urlDatabase[req.params.id];
+
+  //redirect to /urls
+  res.redirect('/urls')
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening to port ${PORT}!`);
