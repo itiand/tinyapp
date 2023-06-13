@@ -64,6 +64,17 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
+//POSTS
+
+app.post('/login', (req, res) => {
+  console.log(req.body);
+
+  let cookie = res.cookie('username', req.body.username);
+
+  res.redirect('/urls')
+})
+
 app.post('/urls/:id/delete', (req,res) => {
   console.log(req.params); //{ id: '9sm5xK' }
   delete urlDatabase[req.params.id];
