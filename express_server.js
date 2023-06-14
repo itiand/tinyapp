@@ -41,18 +41,29 @@ function generateRandomString() {
 ////////////////
 ///////////////
 app.get('/urls', (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const currentUser = users[req.cookies.user_id]
+  
+  ////DEV///
+  // console.log('current cookie', req.cookies.user_id);
+  // console.log(('users database', users));
+  // console.log('retrieved user', currentUser);
+
+
+  
+  const templateVars = { userObj: currentUser, urls: urlDatabase };
   // console.log(req.cookies);
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const currentUser = users[req.cookies.user_id]
+  const templateVars = { userObj: currentUser, urls: urlDatabase };
   res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const currentUser = users[req.cookies.user_id]
+  const templateVars = { userObj: currentUser, urls: urlDatabase };
   res.render("form", templateVars)
 })
 
@@ -70,7 +81,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req,res) => {
-  res.clearCookie('username')
+  res.clearCookie('user_id')
   res.redirect('/urls');
 })
 
@@ -83,7 +94,7 @@ app.post('/register', (req,res) => {
 
   //then set the cookie to the generated id --> user_id = genertatedID
   res.cookie('user_id', users[id].id);
-
+  
   //redirect tp the urls page
   res.redirect('/urls')
 })
@@ -96,7 +107,8 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { username: req.cookies["username"], id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const currentUser = users[req.cookies.user_id]
+  const templateVars = { userObj: currentUser, id: req.params.id, longURL: urlDatabase[req.params.id] };
 
   res.render("urls_show", templateVars);
 });
