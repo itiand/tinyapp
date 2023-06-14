@@ -71,6 +71,12 @@ app.get("/register", (req, res) => {
   res.render("form", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const currentUser = users[req.cookies.user_id];
+  const templateVars = { userObj: currentUser };
+  res.render('login', templateVars);
+});
+
 //POST NON VAR
 app.post("/urls", (req, res) => {
   const generatedId = generateRandomString();
