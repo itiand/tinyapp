@@ -14,12 +14,10 @@ const urlDatabase = {
 function generateRandomString() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
-
   for (let i = 0; i < 6; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     randomString += characters.charAt(randomIndex);
   }
-
   return randomString;
 }
 
@@ -54,6 +52,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${generatedId}`);
 });
 
+app.post('/login', (req, res) => {
+  console.log('REQ BODY', req.body);
+  res.cookie('username', req.body.username);
+
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req,res) => {
+  res.clearCookie('username')
+  res.redirect('/urls');
+})
+
+///VARIABLE ROUTES
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
@@ -65,15 +76,6 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
-//POSTS
-
-app.post('/login', (req, res) => {
-  console.log('REQ BODY', req.body);
-  res.cookie('username', req.body.username);
-
-  res.redirect('/urls');
-});
 
 app.post('/urls/:id/delete', (req, res) => {
 
