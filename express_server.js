@@ -24,9 +24,9 @@ const users = {
     email: "itian@example.com",
     password: "password1",
   },
-}
+};
 
-function generateRandomString() {
+const generateRandomString = function() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
   for (let i = 0; i < 6; i++) {
@@ -34,38 +34,42 @@ function generateRandomString() {
     randomString += characters.charAt(randomIndex);
   }
   return randomString;
-}
+};
 
+const findUserByEmail = function(email) {
+  return Object.values(users).find(user => user.email === email) || false;
+
+};
 
 ///ROUTING/////
 ////////////////
 ///////////////
 app.get('/urls', (req, res) => {
-  const currentUser = users[req.cookies.user_id]
-  
+  const currentUser = users[req.cookies.user_id];
+
   ////DEV///
   // console.log('current cookie', req.cookies.user_id);
   // console.log(('users database', users));
   // console.log('retrieved user', currentUser);
 
 
-  
+
   const templateVars = { userObj: currentUser, urls: urlDatabase };
   // console.log(req.cookies);
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const currentUser = users[req.cookies.user_id]
+  const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, urls: urlDatabase };
   res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const currentUser = users[req.cookies.user_id]
+  const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, urls: urlDatabase };
-  res.render("form", templateVars)
-})
+  res.render("form", templateVars);
+});
 
 //POST NON VAR
 app.post("/urls", (req, res) => {
@@ -80,24 +84,40 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-app.post('/logout', (req,res) => {
-  res.clearCookie('user_id')
+app.post('/logout', (req, res) => {
+  res.clearCookie('user_id');
   res.redirect('/urls');
-})
+});
 
-app.post('/register', (req,res) => {
-  // const newUser = {}
-  const id = generateRandomString()
+app.post('/register', (req, res) => {
+  const bodyInfo = req.body;
+  const currentUser = users[req.cookies.user_id];
+  //NEW
+  //IF email or password empty --> 400
+  if (!bodyInfo.email || !bodyInfo.password) {
+    const message = "ERROR: Please fillout BOTH email and password.";
+    res.status(400).render('error400', { message, userObj: currentUser });
+    return;
+  }
+
+  //if already in users --> 400 status code
+  if (findUserByEmail) {
+    const message = "ERROR: Email already in use";
+    res.status(400).render('error400', { message });
+    return;
+  }
+
+  const id = generateRandomString();
 
   //updates our 'users database, parameters from req.body and generatedID
-  users[id] = { id, email : req.body.email, password : req.body.password  }
+  users[id] = { id, email: bodyInfo.email, password: bodyInfo.password };
 
   //then set the cookie to the generated id --> user_id = genertatedID
   res.cookie('user_id', users[id].id);
-  
+
   //redirect tp the urls page
-  res.redirect('/urls')
-})
+  res.redirect('/urls');
+});
 
 
 ///VARIABLE ROUTES
@@ -107,7 +127,7 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const currentUser = users[req.cookies.user_id]
+  const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, id: req.params.id, longURL: urlDatabase[req.params.id] };
 
   res.render("urls_show", templateVars);
