@@ -1,8 +1,10 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -36,30 +38,29 @@ app.use(express.urlencoded({ extended: true }));
 // });
 
 app.get('/urls', (req, res) => {
-  const templateVars = { urls: urlDatabase }
-  res.render("urls_index", templateVars)
-})
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  // console.log(req.cookies);
+  res.render("urls_index", templateVars);
+});
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-})
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_new", templateVars);
+});
 
 app.post("/urls", (req, res) => {
-  const generatedId = generateRandomString()
-  urlDatabase[generatedId] = req.body['longURL']
-  console.log(urlDatabase);
+  const generatedId = generateRandomString();
+  urlDatabase[generatedId] = req.body['longURL'];
   res.redirect(`/urls/${generatedId}`);
-
 });
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  console.log('testing', req.params);
   res.redirect(longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { username: req.cookies["username"], id: req.params.id, longURL: urlDatabase[req.params.id] };
 
   res.render("urls_show", templateVars);
 });
@@ -68,30 +69,26 @@ app.get("/urls/:id", (req, res) => {
 //POSTS
 
 app.post('/login', (req, res) => {
-  console.log(req.body);
+  console.log('REQ BODY', req.body);
+  res.cookie('username', req.body.username);
 
-  let cookie = res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
 
-  res.redirect('/urls')
-})
+app.post('/urls/:id/delete', (req, res) => {
 
-app.post('/urls/:id/delete', (req,res) => {
-  console.log(req.params); //{ id: '9sm5xK' }
   delete urlDatabase[req.params.id];
 
   //redirect to /urls
-  res.redirect('/urls')
-})
+  res.redirect('/urls');
+});
 
 app.post('/urls/:id', (req, res) => {
   const id = req.params.id;
   const updatedURL = req.body['updatedURL'];
 
-  console.log(id);
-  console.log(req.body);
   // // Update the URL in the database
   urlDatabase[id] = updatedURL;
-  console.log(urlDatabase);
   res.redirect(`/urls/${id}`);
 });
 
