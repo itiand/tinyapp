@@ -85,7 +85,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    // res.cookie('username', req.body.username);
+
 
   const userFound = findUserByEmail(req.body.email);
 
@@ -96,6 +96,7 @@ app.post('/login', (req, res) => {
   }
 
   console.log('Successfully logged in!');
+  res.cookie('user_id',userFound.id);
   res.redirect('/urls');
 });
 
