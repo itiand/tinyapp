@@ -138,8 +138,14 @@ app.post("/urls", (req, res) => {
 
 app.post('/login', (req, res) => {
   const userFound = findUserByEmail(req.body.email);
+  const passwordInput = req.body.password;
+  const hashedPass = userFound.password;
 
-  if (!userFound || req.body.password !== userFound.password) {
+  console.log(passwordInput, " VS ", hashedPass);
+
+  const correctPassword = bcrypt.compareSync(passwordInput, hashedPass);
+  
+  if (!userFound || !correctPassword) {
     const message = "Invalid login";
     res.status(403).render('error400', { message, userObj: undefined });
     return;
@@ -181,7 +187,7 @@ app.post('/register', (req, res) => {
   //updates our 'users database, parameters from req.body and generatedID
   users[id] = { id, email: bodyInfo.email, password: hash };
   console.log('Users[id]', users[id]);
-  
+
   //then set the cookie to the generated id --> user_id = genertatedID
   res.cookie('user_id', users[id].id);
   //redirect tp the urls page
