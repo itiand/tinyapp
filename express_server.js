@@ -229,7 +229,7 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
-
+  console.log('reqparams: ', req.params);
   //IF does not exist
   //if user is not logged in
   //dones not own url
@@ -237,7 +237,7 @@ app.post('/urls/:id', (req, res) => {
   const updatedURL = req.body['updatedURL'];
 
   // // Update the URL in the database
-  urlDatabase[id] = updatedURL;
+  urlDatabase[id].longURL = updatedURL;
   res.redirect(`/urls/${id}`);
 });
 
