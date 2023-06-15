@@ -229,16 +229,29 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
-  console.log('reqparams: ', req.params);
-  //IF does not exist
-  //if user is not logged in
-  //dones not own url
-  const id = req.params.id;
+  // POST /urls/:id should return a relevant error message if id does not exist
+  // POST /urls/:id should return a relevant error message if the user does not own the URL
+
+  // POST /urls/:id should return a relevant error message if the user is not logged in
+  if (!isLoggedIn(req)) {
+    res.send('Please login first.');
+    return;
+  }
+
+  const currentUser = users[req.cookies.user_id];
+  const urlsForCurrentUser = urlsForUser(currentUser.id);
+  const urlID = req.params.id;
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  //if url does not exist or if it doesn't belong to user
+  if (!urlDatabase[urlID] || !belongsToUser ) {
+    res.send("URL not found in your account.");
+  }
+
   const updatedURL = req.body['updatedURL'];
 
   // // Update the URL in the database
-  urlDatabase[id].longURL = updatedURL;
-  res.redirect(`/urls/${id}`);
+  urlDatabase[urlID].longURL = updatedURL;
+  res.redirect(`/urls/${urlID}`);
 });
 
 app.listen(PORT, () => {
