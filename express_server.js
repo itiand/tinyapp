@@ -7,7 +7,6 @@ app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -46,16 +45,7 @@ const findUserByEmail = function(email) {
 ///////////////
 app.get('/urls', (req, res) => {
   const currentUser = users[req.cookies.user_id];
-
-  ////DEV///
-  // console.log('current cookie', req.cookies.user_id);
-  // console.log(('users database', users));
-  // console.log('retrieved user', currentUser);
-
-
-
   const templateVars = { userObj: currentUser, urls: urlDatabase };
-  // console.log(req.cookies);
   res.render("urls_index", templateVars);
 });
 
@@ -85,18 +75,16 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-
-
   const userFound = findUserByEmail(req.body.email);
 
-  if(!userFound || req.body.password !== userFound.password) {
+  if (!userFound || req.body.password !== userFound.password) {
     const message = "Invalid login";
-    res.status(403).render('error400', { message, userObj: undefined  });
-    return
+    res.status(403).render('error400', { message, userObj: undefined });
+    return;
   }
 
   console.log('Successfully logged in!');
-  res.cookie('user_id',userFound.id);
+  res.cookie('user_id', userFound.id);
   res.redirect('/urls');
 });
 
@@ -108,7 +96,7 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   const bodyInfo = req.body;
   const currentUser = users[req.cookies.user_id];
-  //NEW
+
   //IF email or password empty --> 400
   if (!bodyInfo.email || !bodyInfo.password) {
     const message = "ERROR: Please fillout BOTH email and password.";
@@ -117,7 +105,6 @@ app.post('/register', (req, res) => {
     return;
   }
 
-  //if already in users --> 400 status code
   if (findUserByEmail(bodyInfo.email)) {
     const message = "ERROR: Email already in use";
     res.status(400).render('error400', { message, userObj: currentUser });
@@ -128,14 +115,11 @@ app.post('/register', (req, res) => {
 
   //updates our 'users database, parameters from req.body and generatedID
   users[id] = { id, email: bodyInfo.email, password: bodyInfo.password };
-
   //then set the cookie to the generated id --> user_id = genertatedID
   res.cookie('user_id', users[id].id);
-
   //redirect tp the urls page
   res.redirect('/urls');
 });
-
 
 ///VARIABLE ROUTES
 app.get("/u/:id", (req, res) => {
@@ -150,9 +134,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-
 app.post('/urls/:id/delete', (req, res) => {
-
   delete urlDatabase[req.params.id];
 
   //redirect to /urls
@@ -168,20 +150,6 @@ app.post('/urls/:id', (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
-
 app.listen(PORT, () => {
   console.log(`Example app listening to port ${PORT}!`);
 });
-
-
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
