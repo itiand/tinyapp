@@ -85,8 +85,17 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
+    // res.cookie('username', req.body.username);
 
+  const userFound = findUserByEmail(req.body.email);
+
+  if(!userFound || req.body.password !== userFound.password) {
+    const message = "Invalid login";
+    res.status(403).render('error400', { message, userObj: undefined  });
+    return
+  }
+
+  console.log('Successfully logged in!');
   res.redirect('/urls');
 });
 
@@ -102,14 +111,15 @@ app.post('/register', (req, res) => {
   //IF email or password empty --> 400
   if (!bodyInfo.email || !bodyInfo.password) {
     const message = "ERROR: Please fillout BOTH email and password.";
+    console.log('CURRENT USER', currentUser);
     res.status(400).render('error400', { message, userObj: currentUser });
     return;
   }
 
   //if already in users --> 400 status code
-  if (findUserByEmail) {
+  if (findUserByEmail(bodyInfo.email)) {
     const message = "ERROR: Email already in use";
-    res.status(400).render('error400', { message });
+    res.status(400).render('error400', { message, userObj: currentUser });
     return;
   }
 
