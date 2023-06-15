@@ -57,8 +57,8 @@ const generateRandomString = function() {
   return randomString;
 };
 
-const findUserByEmail = function(email) {
-  return Object.values(users).find(user => user.email === email) || '';
+const findUserByEmail = function(email, userDatabase) {
+  return Object.values(userDatabase).find(user => user.email === email) || '';
 };
 
 const urlsForUser = function(id) {
@@ -144,7 +144,7 @@ app.post("/urls", (req, res) => {
 
 app.post('/login', (req, res) => {
 
-  let userFound = findUserByEmail(req.body.email);
+  let userFound = findUserByEmail(req.body.email, users);
   if (!userFound) {
     const message = "Invalid login";
     res.status(403).render('error400', { message, userObj: undefined });
@@ -183,7 +183,7 @@ app.post('/register', (req, res) => {
     return;
   }
 
-  if (findUserByEmail(bodyInfo.email)) {
+  if (findUserByEmail(bodyInfo.email, users)) {
     const message = "ERROR: Email already in use";
     res.status(400).render('error400', { message, userObj: currentUser });
     return;
