@@ -222,17 +222,6 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  delete urlDatabase[req.params.id];
-
-  //redirect to /urls
-  res.redirect('/urls');
-});
-
-app.post('/urls/:id', (req, res) => {
-  // POST /urls/:id should return a relevant error message if id does not exist
-  // POST /urls/:id should return a relevant error message if the user does not own the URL
-
-  // POST /urls/:id should return a relevant error message if the user is not logged in
   if (!isLoggedIn(req)) {
     res.send('Please login first.');
     return;
@@ -247,9 +236,30 @@ app.post('/urls/:id', (req, res) => {
     res.send("URL not found in your account.");
   }
 
-  const updatedURL = req.body['updatedURL'];
+  delete urlDatabase[req.params.id];
 
-  // // Update the URL in the database
+  //redirect to /urls
+  res.redirect('/urls');
+});
+
+app.post('/urls/:id', (req, res) => {
+  if (!isLoggedIn(req)) {
+    res.send('Please login first.');
+    return;
+  }
+
+  const currentUser = users[req.cookies.user_id];
+  const urlsForCurrentUser = urlsForUser(currentUser.id);
+  const urlID = req.params.id;
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  //if url does not exist or if it doesn't belong to user
+  if (!urlDatabase[urlID] || !belongsToUser ) {
+    res.send("URL not found in your account.");
+  }
+
+  //if logged in and they own the url....
+  const updatedURL = req.body['updatedURL'];
+  //// Update the URL in the database
   urlDatabase[urlID].longURL = updatedURL;
   res.redirect(`/urls/${urlID}`);
 });
