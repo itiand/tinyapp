@@ -1,11 +1,16 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
+
 const app = express();
 const bcrypt = require('bcryptjs');
 const PORT = 8080;
 
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['barney', 'is', 'a', 'dinosaur', 'mary had a little', 'lamb']
+}))
+
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -24,20 +29,21 @@ const urlDatabase = {
 };
 
 const users = {
-  itian: {
-    id: "itian",
-    email: "itian@example.com",
-    password: "password",
+  pJhU8g: {
+    id: 'pJhU8g',
+    email: 'c@gmail.ca',
+    password: '$2a$10$UDGS85RB7iBVtnHRcPD7..rVJvRZLIfLdWoA9hNS1l01GlmHqUm/S'
   },
-  negativedelos: {
-    id: "negativedelos",
-    email: "negativedelos@example.com",
-    password: "password1",
-  },
+  wZ2qTp: {
+    id: 'wZ2qTp',
+    email: 'itian@example.com',
+    password: '$2a$10$jIKGZAKojx5rQlBTxtF2E.zpma.Pi6s1hFNJy7TZPjJgBNS9hpR2u'
+  }
 };
 
 const isLoggedIn = function(reqBodyObj) {
-  if (!Object.keys(reqBodyObj.cookies).includes('user_id')) return false;
+  // console.log('Req BodyObj ', reqBodyObj.session);
+  if (!Object.keys(reqBodyObj.session).includes('user_id')) return false;
   return true;
 };
 
@@ -52,7 +58,7 @@ const generateRandomString = function() {
 };
 
 const findUserByEmail = function(email) {
-  return Object.values(users).find(user => user.email === email) || false;
+  return Object.values(users).find(user => user.email === email) || '';
 };
 
 const urlsForUser = function(id) {
@@ -79,7 +85,7 @@ app.get('/urls', (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const templateVars = { userObj: currentUser, urls: urlsForCurrentUser };
 
@@ -92,7 +98,7 @@ app.get("/urls/new", (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const templateVars = { userObj: currentUser };
   res.render("urls_new", templateVars);
 });
@@ -104,7 +110,7 @@ app.get("/register", (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const templateVars = { userObj: currentUser };
   res.render("form", templateVars);
 });
@@ -115,7 +121,7 @@ app.get("/login", (req, res) => {
     res.redirect('/urls');
     return;
   }
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const templateVars = { userObj: currentUser };
   res.render('login', templateVars);
 });
@@ -130,40 +136,44 @@ app.post("/urls", (req, res) => {
   const generatedId = generateRandomString();
   urlDatabase[generatedId] = {};
   urlDatabase[generatedId]['longURL'] = req.body['longURL'];
-  urlDatabase[generatedId]['userID'] = req.cookies.user_id;
+  urlDatabase[generatedId]['userID'] = req.session.user_id;
   console.log(urlDatabase[generatedId]);
   console.log('urldatabase :', urlDatabase);
   res.redirect(`/urls/${generatedId}`);
 });
 
 app.post('/login', (req, res) => {
-  const userFound = findUserByEmail(req.body.email);
+
+  let userFound = findUserByEmail(req.body.email);
+  if (!userFound) {
+    const message = "Invalid login";
+    res.status(403).render('error400', { message, userObj: undefined });
+    return;
+  }
+
   const passwordInput = req.body.password;
   const hashedPass = userFound.password;
-
-  console.log(passwordInput, " VS ", hashedPass);
-
   const correctPassword = bcrypt.compareSync(passwordInput, hashedPass);
-  
-  if (!userFound || !correctPassword) {
+  if(!correctPassword) {
     const message = "Invalid login";
     res.status(403).render('error400', { message, userObj: undefined });
     return;
   }
 
   console.log('Successfully logged in!');
-  res.cookie('user_id', userFound.id);
+  req.session.user_id = userFound.id;
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  // res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/login');
 });
 
 app.post('/register', (req, res) => {
   const bodyInfo = req.body;
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
 
   //IF email or password empty --> 400
   if (!bodyInfo.email || !bodyInfo.password) {
@@ -181,7 +191,7 @@ app.post('/register', (req, res) => {
 
   const id = generateRandomString();
   const password = bodyInfo.password;
-  var hash = bcrypt.hashSync(password, 10);
+  const hash = bcrypt.hashSync(password, 10);
   console.log('HASH - ',hash);
 
   //updates our 'users database, parameters from req.body and generatedID
@@ -189,7 +199,7 @@ app.post('/register', (req, res) => {
   console.log('Users[id]', users[id]);
 
   //then set the cookie to the generated id --> user_id = genertatedID
-  res.cookie('user_id', users[id].id);
+  req.session.user_id = users[id].id;
   //redirect tp the urls page
   res.redirect('/urls');
 });
@@ -197,7 +207,7 @@ app.post('/register', (req, res) => {
 ///VARIABLE ROUTES
 app.get("/u/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
-    const currentUser = users[req.cookies.user_id];
+    const currentUser = users[req.session.user_id];
     const message = "URL does not exist.";
     res.status(400).render('error400', { message, userObj: currentUser });
     return;
@@ -215,7 +225,7 @@ app.get("/urls/:id", (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const urlID = req.params.id;
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
@@ -239,7 +249,7 @@ app.post('/urls/:id/delete', (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const urlID = req.params.id;
   const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
@@ -260,18 +270,20 @@ app.post('/urls/:id', (req, res) => {
     return;
   }
 
-  const currentUser = users[req.cookies.user_id];
+  const currentUser = users[req.session.user_id];
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const urlID = req.params.id;
   const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  
   //if url does not exist or if it doesn't belong to user
   if (!urlDatabase[urlID] || !belongsToUser ) {
     res.send("URL not found in your account.");
   }
 
   //if logged in and they own the url....
+  // the URL in the database
+  
   const updatedURL = req.body['updatedURL'];
-  //// Update the URL in the database
   urlDatabase[urlID].longURL = updatedURL;
   res.redirect(`/urls/${urlID}`);
 });
