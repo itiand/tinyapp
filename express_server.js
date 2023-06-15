@@ -42,7 +42,6 @@ const generateRandomString = function() {
 
 const findUserByEmail = function(email) {
   return Object.values(users).find(user => user.email === email) || false;
-
 };
 
 ///ROUTING/////
@@ -147,11 +146,19 @@ app.post('/register', (req, res) => {
 
 ///VARIABLE ROUTES
 app.get("/u/:id", (req, res) => {
+  if(!urlDatabase[req.params.id]) {
+    const currentUser = users[req.cookies.user_id];
+    const message = "URL does not exist."
+    res.status(400).render('error400', {message, userObj: currentUser })
+    return;
+  }
+  
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
+
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
