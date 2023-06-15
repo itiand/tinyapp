@@ -10,12 +10,16 @@ app.use(express.urlencoded({ extended: true }));
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
+    userID: "itian",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "aJ48lW",
+    userID: "negativedelos",
   },
+  isBsGw: {
+    longURL: "https://www.google.ca",
+    userID: "negativedelos",
+  }
 };
 
 const users = {
@@ -34,7 +38,7 @@ const users = {
 const isLoggedIn = function(reqBodyObj) {
   if (!Object.keys(reqBodyObj.cookies).includes('user_id')) return false;
   return true;
-}
+};
 
 const generateRandomString = function() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -50,24 +54,38 @@ const findUserByEmail = function(email) {
   return Object.values(users).find(user => user.email === email) || false;
 };
 
+const urlsForUser = function(id) {
+  let userURLs = {}
+  for(let urlID in urlDatabase) {
+    if(id === urlDatabase[urlID].userID) {
+      userURLs[urlID] = urlDatabase[urlID]
+    }
+  }
+  return userURLs;
+};
+
 ///ROUTING/////
 ////////////////
 ///////////////
 app.get('/urls', (req, res) => {
   const currentUser = users[req.cookies.user_id];
-  const templateVars = { userObj: currentUser, urls: urlDatabase };
-  if(!isLoggedIn(req)) {
-    const message = "Please login first."
-    res.render('login-first', {message, ...templateVars})
-    return
+  console.log('current user id - ', currentUser.id);
+  const urlsForCurrentUser = urlsForUser(currentUser.id)
+  const templateVars = { userObj: currentUser, urls: urlsForCurrentUser };
+
+  if (!isLoggedIn(req)) {
+    const message = "Please login first.";
+    res.render('login-first', { message, ...templateVars });
+    return;
   }
+
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  if(!isLoggedIn(req)) {
-    res.redirect('/login')
-    return
+  if (!isLoggedIn(req)) {
+    res.redirect('/login');
+    return;
   }
 
   const currentUser = users[req.cookies.user_id];
@@ -76,22 +94,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  if(isLoggedIn(req)) {
+  if (isLoggedIn(req)) {
     console.log("yep logged in");
-    res.redirect('/urls')
-    return
+    res.redirect('/urls');
+    return;
   }
-  
+
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser };
   res.render("form", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  if(isLoggedIn(req)) {
+  if (isLoggedIn(req)) {
     console.log("yep logged in");
-    res.redirect('/urls')
-    return
+    res.redirect('/urls');
+    return;
   }
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser };
@@ -100,9 +118,9 @@ app.get("/login", (req, res) => {
 
 //POST NON VAR
 app.post("/urls", (req, res) => {
-  if(!isLoggedIn(req)) {
-    res.send('Please login first.')
-    return
+  if (!isLoggedIn(req)) {
+    res.send('Please login first.');
+    return;
   }
   const generatedId = generateRandomString();
   urlDatabase[generatedId] = {};
@@ -160,10 +178,10 @@ app.post('/register', (req, res) => {
 
 ///VARIABLE ROUTES
 app.get("/u/:id", (req, res) => {
-  if(!urlDatabase[req.params.id]) {
+  if (!urlDatabase[req.params.id]) {
     const currentUser = users[req.cookies.user_id];
-    const message = "URL does not exist."
-    res.status(400).render('error400', {message, userObj: currentUser })
+    const message = "URL does not exist.";
+    res.status(400).render('error400', { message, userObj: currentUser });
     return;
   }
 
@@ -175,13 +193,13 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const currentUser = users[req.cookies.user_id];
   const id = req.params.id;
-  
+
   if (!urlDatabase[id]) {
     const message = "URL does not exist.";
     const templateVars = { userObj: currentUser, id, message };
     return res.status(400).render('error400', templateVars);
   }
-  
+
   const longURL = urlDatabase[id].longURL;
   const templateVars = { userObj: currentUser, id, longURL };
   res.render("urls_show", templateVars);
