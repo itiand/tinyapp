@@ -55,13 +55,17 @@ const findUserByEmail = function(email) {
 };
 
 const urlsForUser = function(id) {
-  let userURLs = {}
-  for(let urlID in urlDatabase) {
-    if(id === urlDatabase[urlID].userID) {
-      userURLs[urlID] = urlDatabase[urlID]
+  let userURLs = {};
+  for (let urlID in urlDatabase) {
+    if (id === urlDatabase[urlID].userID) {
+      userURLs[urlID] = urlDatabase[urlID];
     }
   }
   return userURLs;
+};
+
+const isUsersURL = function(urlID, usersURLObj) {
+  return Object.keys(usersURLObj).includes(urlID);
 };
 
 ///ROUTING/////
@@ -70,7 +74,7 @@ const urlsForUser = function(id) {
 app.get('/urls', (req, res) => {
   const currentUser = users[req.cookies.user_id];
   console.log('current user id - ', currentUser.id);
-  const urlsForCurrentUser = urlsForUser(currentUser.id)
+  const urlsForCurrentUser = urlsForUser(currentUser.id);
   const templateVars = { userObj: currentUser, urls: urlsForCurrentUser };
 
   if (!isLoggedIn(req)) {
@@ -192,16 +196,20 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const currentUser = users[req.cookies.user_id];
-  const id = req.params.id;
+  const urlID = req.params.id;
+  const urlsForCurrentUser = urlsForUser(currentUser.id);
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  let templateVars = { userObj: currentUser, urlID };
 
-  if (!urlDatabase[id]) {
-    const message = "URL does not exist.";
-    const templateVars = { userObj: currentUser, id, message };
-    return res.status(400).render('error400', templateVars);
+  //if url does not exist or if it doesn't belong to user
+  if (!urlDatabase[urlID] || !belongsToUser ) {
+    const message = "URL not found in your account.";
+    return res.status(400).render('error400', {message, ... templateVars});
   }
 
-  const longURL = urlDatabase[id].longURL;
-  const templateVars = { userObj: currentUser, id, longURL };
+  const longURL = urlsForCurrentUser[urlID].longURL;
+  templateVars = { longURL, ...templateVars}
+
   res.render("urls_show", templateVars);
 });
 
