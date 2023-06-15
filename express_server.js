@@ -25,6 +25,11 @@ const users = {
   },
 };
 
+const isLoggedIn = function(reqBodyObj) {
+  if (!Object.keys(reqBodyObj.cookies).includes('user_id')) return false;
+  return true;
+}
+
 const generateRandomString = function() {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let randomString = '';
@@ -56,6 +61,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if(isLoggedIn(req)) {
+    console.log("yep logged in");
+    res.redirect('/urls')
+    return
+  }
+  
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, urls: urlDatabase };
   res.render("form", templateVars);
@@ -130,7 +141,6 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, id: req.params.id, longURL: urlDatabase[req.params.id] };
-
   res.render("urls_show", templateVars);
 });
 
