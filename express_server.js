@@ -8,8 +8,14 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -58,8 +64,9 @@ app.get("/urls/new", (req, res) => {
     res.redirect('/login')
     return
   }
+
   const currentUser = users[req.cookies.user_id];
-  const templateVars = { userObj: currentUser, urls: urlDatabase };
+  const templateVars = { userObj: currentUser };
   res.render("urls_new", templateVars);
 });
 
@@ -71,7 +78,7 @@ app.get("/register", (req, res) => {
   }
   
   const currentUser = users[req.cookies.user_id];
-  const templateVars = { userObj: currentUser, urls: urlDatabase };
+  const templateVars = { userObj: currentUser };
   res.render("form", templateVars);
 });
 
@@ -93,7 +100,9 @@ app.post("/urls", (req, res) => {
     return
   }
   const generatedId = generateRandomString();
-  urlDatabase[generatedId] = req.body['longURL'];
+  urlDatabase[generatedId] = {};
+  urlDatabase[generatedId]['longURL'] = req.body['longURL'];
+  console.log(urlDatabase[generatedId]);
   res.redirect(`/urls/${generatedId}`);
 });
 
@@ -152,15 +161,24 @@ app.get("/u/:id", (req, res) => {
     res.status(400).render('error400', {message, userObj: currentUser })
     return;
   }
-  
-  const longURL = urlDatabase[req.params.id];
+
+  const longURL = urlDatabase[req.params.id].longURL;
+  console.log(longURL);
   res.redirect(longURL);
 });
 
 app.get("/urls/:id", (req, res) => {
-
   const currentUser = users[req.cookies.user_id];
-  const templateVars = { userObj: currentUser, id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const id = req.params.id;
+  
+  if (!urlDatabase[id]) {
+    const message = "URL does not exist.";
+    const templateVars = { userObj: currentUser, id, message };
+    return res.status(400).render('error400', templateVars);
+  }
+  
+  const longURL = urlDatabase[id].longURL;
+  const templateVars = { userObj: currentUser, id, longURL };
   res.render("urls_show", templateVars);
 });
 
