@@ -55,6 +55,10 @@ app.get('/urls', (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if(!isLoggedIn(req)) {
+    res.redirect('/login')
+    return
+  }
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, urls: urlDatabase };
   res.render("urls_new", templateVars);
@@ -73,6 +77,11 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  if(isLoggedIn(req)) {
+    console.log("yep logged in");
+    res.redirect('/urls')
+    return
+  }
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser };
   res.render('login', templateVars);
@@ -80,6 +89,10 @@ app.get("/login", (req, res) => {
 
 //POST NON VAR
 app.post("/urls", (req, res) => {
+  if(!isLoggedIn(req)) {
+    res.send('Please login first.')
+    return
+  }
   const generatedId = generateRandomString();
   urlDatabase[generatedId] = req.body['longURL'];
   res.redirect(`/urls/${generatedId}`);

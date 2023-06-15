@@ -19,14 +19,15 @@
         <a class="nav-item nav-link" href="/register">Sign Up</a>
       </div>
     </div>
-      <% if (userObj) { %>
-      <form class="form-inline" action="/logout" method="POST">
-          <p class="my-2 my-md-0 mr-2 text-light">Logged in as: <%= userObj.email %></p>
-          <button class="btn btn-light" type="submit">Logout</button>
+    <% if (userObj) { %>
+    <form class="form-inline" action="/logout" method="POST">
+        <p class="my-2 my-md-0 mr-2 text-light">Logged in as: <%= userObj.email %></p>
+        <button class="btn btn-light" type="submit">Logout</button>
+    </form>
+    <% } else {  %>
+      <form class="form-inline" action="/login" method="GET">
+        <button class="btn btn-light" type="submit">Login</button>
       </form>
-      <% } else {  %>
-        <form class="form-inline" action="/login" method="GET">
-          <button class="btn btn-light" type="submit">Login</button>
-        </form>
-      <% } %>
+    <% } %>
+    </nav>
 </header>
