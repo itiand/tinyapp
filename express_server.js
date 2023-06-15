@@ -56,6 +56,11 @@ const findUserByEmail = function(email) {
 app.get('/urls', (req, res) => {
   const currentUser = users[req.cookies.user_id];
   const templateVars = { userObj: currentUser, urls: urlDatabase };
+  if(!isLoggedIn(req)) {
+    const message = "Please login first."
+    res.render('login-first', {message, ...templateVars})
+    return
+  }
   res.render("urls_index", templateVars);
 });
 
