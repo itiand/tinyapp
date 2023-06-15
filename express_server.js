@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const app = express();
+const bcrypt = require('bcryptjs');
 const PORT = 8080;
 
 app.set("view engine", "ejs");
@@ -30,7 +31,7 @@ const users = {
   },
   negativedelos: {
     id: "negativedelos",
-    email: "itian@example.com",
+    email: "negativedelos@example.com",
     password: "password1",
   },
 };
@@ -173,9 +174,14 @@ app.post('/register', (req, res) => {
   }
 
   const id = generateRandomString();
+  const password = bodyInfo.password;
+  var hash = bcrypt.hashSync(password, 10);
+  console.log('HASH - ',hash);
 
   //updates our 'users database, parameters from req.body and generatedID
-  users[id] = { id, email: bodyInfo.email, password: bodyInfo.password };
+  users[id] = { id, email: bodyInfo.email, password: hash };
+  console.log('Users[id]', users[id]);
+  
   //then set the cookie to the generated id --> user_id = genertatedID
   res.cookie('user_id', users[id].id);
   //redirect tp the urls page
