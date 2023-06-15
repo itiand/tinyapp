@@ -22,7 +22,7 @@
     <% if (userObj) { %>
     <form class="form-inline" action="/logout" method="POST">
         <p class="my-2 my-md-0 mr-2 text-light">Logged in as: <%= userObj.email %></p>
-        <button class="btn btn-light" type="submit">Logout</button>
+        <button class="btn btn-outline-light" type="submit">Logout</button>
     </form>
     <% } else {  %>
       <form class="form-inline" action="/login" method="GET">

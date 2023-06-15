@@ -8,7 +8,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  b6UTxQ: {
+  b6UTxQ: { 
     longURL: "https://www.tsn.ca",
     userID: "itian",
   },
@@ -72,16 +72,15 @@ const isUsersURL = function(urlID, usersURLObj) {
 ////////////////
 ///////////////
 app.get('/urls', (req, res) => {
-  const currentUser = users[req.cookies.user_id];
-  console.log('current user id - ', currentUser.id);
-  const urlsForCurrentUser = urlsForUser(currentUser.id);
-  const templateVars = { userObj: currentUser, urls: urlsForCurrentUser };
-
   if (!isLoggedIn(req)) {
     const message = "Please login first.";
-    res.render('login-first', { message, ...templateVars });
+    res.render('login-first', { message, userObj : undefined });
     return;
   }
+
+  const currentUser = users[req.cookies.user_id];
+  const urlsForCurrentUser = urlsForUser(currentUser.id);
+  const templateVars = { userObj: currentUser, urls: urlsForCurrentUser };
 
   res.render("urls_index", templateVars);
 });
@@ -126,10 +125,13 @@ app.post("/urls", (req, res) => {
     res.send('Please login first.');
     return;
   }
+  
   const generatedId = generateRandomString();
   urlDatabase[generatedId] = {};
   urlDatabase[generatedId]['longURL'] = req.body['longURL'];
+  urlDatabase[generatedId]['userID'] = req.cookies.user_id;
   console.log(urlDatabase[generatedId]);
+  console.log('urldatabase :', urlDatabase);
   res.redirect(`/urls/${generatedId}`);
 });
 
@@ -195,6 +197,12 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!isLoggedIn(req)) {
+    const message = "Please login first.";
+    res.render('login-first', { message, userObj : undefined });
+    return;
+  }
+
   const currentUser = users[req.cookies.user_id];
   const urlID = req.params.id;
   const urlsForCurrentUser = urlsForUser(currentUser.id);
@@ -221,6 +229,10 @@ app.post('/urls/:id/delete', (req, res) => {
 });
 
 app.post('/urls/:id', (req, res) => {
+
+  //IF does not exist
+  //if user is not logged in
+  //dones not own url
   const id = req.params.id;
   const updatedURL = req.body['updatedURL'];
 
