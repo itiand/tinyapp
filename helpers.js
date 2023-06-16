@@ -12,7 +12,18 @@ const generateRandomString = function() {
   return randomString;
 };
 
+const isLoggedIn = function(reqBodyObj) {
+  if (!Object.keys(reqBodyObj.session).includes('user_id')) return false;
+  return true;
+};
+
+const isUsersURL = function(urlID, usersURLObj) {
+  return Object.keys(usersURLObj).includes(urlID);
+};
+
 module.exports = { 
   findUserByEmail,
-  generateRandomString
+  generateRandomString,
+  isLoggedIn,
+  isUsersURL
 };
