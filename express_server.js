@@ -67,7 +67,7 @@ const isUsersURL = function(urlID, usersURLObj) {
 ///////////////
 app.get('/urls', (req, res) => {
   if (!isLoggedIn(req)) {
-    const message = "Please login to use TinyApp!";
+    const message = "Please login to get started";
     res.render('login-first', { message, userObj: undefined });
     return;
   }
@@ -81,7 +81,7 @@ app.get('/urls', (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (!isLoggedIn(req)) {
-    const message = "Please login first.";
+    const message = "Please login first";
     res.render('login-first', { message, userObj: undefined });
     return;
   }
