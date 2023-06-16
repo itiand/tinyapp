@@ -1,6 +1,6 @@
-const { findUserByEmail, generateRandomString } = require('./helpers')
+const { findUserByEmail, generateRandomString } = require('./helpers');
 const express = require("express");
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 
 const app = express();
 const bcrypt = require('bcryptjs');
@@ -10,29 +10,29 @@ app.set("view engine", "ejs");
 app.use(cookieSession({
   name: 'session',
   keys: ['barney', 'is', 'a', 'dinosaur', 'mary had a little', 'lamb']
-}))
+}));
 
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  b6UTxQ: { 
+  b6UTxQ: {
     longURL: "https://www.tsn.ca",
-    userID: "itian",
+    userID: "pJhU8g",
   },
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "negativedelos",
+    userID: "pJhU8g",
   },
   isBsGw: {
     longURL: "https://www.google.ca",
-    userID: "negativedelos",
+    userID: "wZ2qTp",
   }
 };
 
 const users = {
   pJhU8g: {
     id: 'pJhU8g',
-    email: 'c@gmail.ca',
+    email: 'c@gmail.com',
     password: '$2a$10$UDGS85RB7iBVtnHRcPD7..rVJvRZLIfLdWoA9hNS1l01GlmHqUm/S'
   },
   wZ2qTp: {
@@ -67,8 +67,8 @@ const isUsersURL = function(urlID, usersURLObj) {
 ///////////////
 app.get('/urls', (req, res) => {
   if (!isLoggedIn(req)) {
-    const message = "Please login first.";
-    res.render('login-first', { message, userObj : undefined });
+    const message = "Please login to use TinyApp!";
+    res.render('login-first', { message, userObj: undefined });
     return;
   }
 
@@ -81,7 +81,8 @@ app.get('/urls', (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   if (!isLoggedIn(req)) {
-    res.redirect('/login');
+    const message = "Please login first.";
+    res.render('login-first', { message, userObj: undefined });
     return;
   }
 
@@ -119,7 +120,7 @@ app.post("/urls", (req, res) => {
     res.send('Please login first.');
     return;
   }
-  
+
   const generatedId = generateRandomString();
   urlDatabase[generatedId] = {};
   urlDatabase[generatedId]['longURL'] = req.body['longURL'];
@@ -141,7 +142,7 @@ app.post('/login', (req, res) => {
   const passwordInput = req.body.password;
   const hashedPass = userFound.password;
   const correctPassword = bcrypt.compareSync(passwordInput, hashedPass);
-  if(!correctPassword) {
+  if (!correctPassword) {
     const message = "Invalid login";
     res.status(403).render('error400', { message, userObj: undefined });
     return;
@@ -179,7 +180,7 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   const password = bodyInfo.password;
   const hash = bcrypt.hashSync(password, 10);
-  console.log('HASH - ',hash);
+  console.log('HASH - ', hash);
 
   //updates our 'users database, parameters from req.body and generatedID
   users[id] = { id, email: bodyInfo.email, password: hash };
@@ -208,24 +209,24 @@ app.get("/u/:id", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   if (!isLoggedIn(req)) {
     const message = "Please login first.";
-    res.render('login-first', { message, userObj : undefined });
+    res.render('login-first', { message, userObj: undefined });
     return;
   }
 
   const currentUser = users[req.session.user_id];
   const urlID = req.params.id;
   const urlsForCurrentUser = urlsForUser(currentUser.id);
-  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser);
   let templateVars = { userObj: currentUser, urlID };
 
   //if url does not exist or if it doesn't belong to user
-  if (!urlDatabase[urlID] || !belongsToUser ) {
+  if (!urlDatabase[urlID] || !belongsToUser) {
     const message = "URL not found in your account.";
-    return res.status(400).render('error400', {message, ... templateVars});
+    return res.status(400).render('error400', { message, ...templateVars });
   }
 
   const longURL = urlsForCurrentUser[urlID].longURL;
-  templateVars = { longURL, ...templateVars}
+  templateVars = { longURL, ...templateVars };
 
   res.render("urls_show", templateVars);
 });
@@ -239,9 +240,9 @@ app.post('/urls/:id/delete', (req, res) => {
   const currentUser = users[req.session.user_id];
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const urlID = req.params.id;
-  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser);
   //if url does not exist or if it doesn't belong to user
-  if (!urlDatabase[urlID] || !belongsToUser ) {
+  if (!urlDatabase[urlID] || !belongsToUser) {
     res.send("URL not found in your account.");
   }
 
@@ -260,16 +261,15 @@ app.post('/urls/:id', (req, res) => {
   const currentUser = users[req.session.user_id];
   const urlsForCurrentUser = urlsForUser(currentUser.id);
   const urlID = req.params.id;
-  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser)
-  
+  const belongsToUser = isUsersURL(urlID, urlsForCurrentUser);
+
   //if url does not exist or if it doesn't belong to user
-  if (!urlDatabase[urlID] || !belongsToUser ) {
+  if (!urlDatabase[urlID] || !belongsToUser) {
     res.send("URL not found in your account.");
   }
 
   //if logged in and they own the url....
   // the URL in the database
-  
   const updatedURL = req.body['updatedURL'];
   urlDatabase[urlID].longURL = updatedURL;
   res.redirect(`/urls/${urlID}`);
