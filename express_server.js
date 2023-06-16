@@ -1,4 +1,4 @@
-const { findUserByEmail, generateRandomString } = require('./helper')
+const { findUserByEmail, generateRandomString } = require('./helpers')
 const express = require("express");
 const cookieSession = require('cookie-session')
 

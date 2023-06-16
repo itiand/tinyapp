@@ -1,5 +1,5 @@
 const findUserByEmail = function(email, userDatabase) {
-  return Object.values(userDatabase).find(user => user.email === email) || '';
+  return Object.values(userDatabase).find(user => user.email === email);
 };
 
 const generateRandomString = function() {
